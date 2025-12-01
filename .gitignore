@@ -1,0 +1,23 @@
+# Maven / Java
+/target/
+/*.log
+**/target/
+/*.class
+*.jar
+
+# IntelliJ
+.idea/
+*.iml
+out/
+
+# VS Code
+.vscode/
+
+# OS
+Thumbs.db
+.DS_Store
+
+# Credentials / local env
+.env
+*.env
+secrets.properties
