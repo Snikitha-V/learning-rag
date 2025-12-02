@@ -27,6 +27,7 @@ chunks.jsonl
 *.jsonl
 *.db
 
-# Large ONNX model files (too big for GitHub)
+# Large ONNX model files(too large to upload to Github)
 models/
 *.onnx
+
