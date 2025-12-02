@@ -26,3 +26,7 @@ secrets.properties
 chunks.jsonl
 *.jsonl
 *.db
+
+# Large ONNX model files (too big for GitHub)
+models/
+*.onnx

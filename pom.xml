@@ -36,12 +36,64 @@
   </dependency>
 
   <!-- JUnit 4 for the default archetype tests -->
-  <dependency>
-      <groupId>junit</groupId>
-      <artifactId>junit</artifactId>
-      <version>4.13.2</version>
-      <scope>test</scope>
-  </dependency>
+<dependency>
+    <groupId>junit</groupId>
+    <artifactId>junit</artifactId>
+    <version>4.13.2</version>
+    <scope>test</scope>
+</dependency>
+
+  <!-- DJL core API -->
+<dependency>
+  <groupId>ai.djl</groupId>
+  <artifactId>api</artifactId>
+  <version>0.26.0</version>
+</dependency>
+
+<!-- DJL PyTorch engine -->
+<dependency>
+  <groupId>ai.djl.pytorch</groupId>
+  <artifactId>pytorch-engine</artifactId>
+  <version>0.26.0</version>
+</dependency>
+
+<!-- DJL PyTorch native CPU binaries (Windows x86_64) -->
+<dependency>
+  <groupId>ai.djl.pytorch</groupId>
+  <artifactId>pytorch-native-cpu</artifactId>
+  <version>2.7.1</version>
+  <classifier>win-x86_64</classifier>
+  <scope>runtime</scope>
+</dependency>
+
+<!-- DJL HuggingFace tokenizer utilities -->
+<dependency>
+  <groupId>ai.djl.huggingface</groupId>
+  <artifactId>tokenizers</artifactId>
+  <version>0.31.1</version>
+</dependency>
+
+<!-- ONNX Runtime Java (CPU) -->
+<dependency>
+  <groupId>com.microsoft.onnxruntime</groupId>
+  <artifactId>onnxruntime</artifactId>
+  <version>1.16.1</version>
+</dependency>
+<!-- DJL Model Zoo -->
+<dependency>
+  <groupId>ai.djl</groupId>
+  <artifactId>model-zoo</artifactId>
+  <version>0.26.0</version>
+</dependency>
+
+<!-- HTTP client -->
+<dependency>
+  <groupId>com.squareup.okhttp3</groupId>
+  <artifactId>okhttp</artifactId>
+  <version>4.11.0</version>
+</dependency>
+
+
 </dependencies>
 
 </project>
