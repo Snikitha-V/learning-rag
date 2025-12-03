@@ -28,34 +28,39 @@ import java.util.concurrent.TimeUnit;
 public class EmbeddingUploader {
 
     private static final ObjectMapper M = new ObjectMapper();
-    private static final String QDRANT_ENV = "QDRANT_URL";
-    private static final String DEFAULT_QDRANT = "http://localhost:6333";
-    private static final String COLLECTION_NAME = "learning_chunks";
     private static final int BATCH_SIZE = 8; // tune for GPU memory; lower if OOM
     private static final int EMBEDDING_DIM = 768; // all-mpnet-base-v2 => 768 dims
 
     public static void main(String[] args) throws Exception {
         String file = args.length > 0 ? args[0] : "chunks.jsonl";
-        String qdrantUrl = System.getenv().getOrDefault(QDRANT_ENV, DEFAULT_QDRANT);
+        
+        // NEW: Read Qdrant URL from system property, fallback to default
+        String qdrantUrl = System.getProperty("qdrant.url", "http://localhost:6333");
+
+        // NEW: Read collection name from system property, fallback to default
+        String collectionName = System.getProperty("qdrant.collection", "learning_chunks");
+
+        // NEW: Read model path from system property, fallback to your existing default
+        String modelPath = System.getProperty("model.path", "models/all-mpnet-base-v2-onnx");
 
         System.out.println("Reading chunks from: " + file);
         List<JsonNode> chunks = readJsonl(file);
         System.out.println("Loaded chunks: " + chunks.size());
 
         // ensure Qdrant collection exists
-        ensureQdrantCollection(qdrantUrl, COLLECTION_NAME, EMBEDDING_DIM);
+        ensureQdrantCollection(qdrantUrl, collectionName, EMBEDDING_DIM);
 
         // initialize ONNX embedder
         System.out.println("Loading embedding model via ONNX Runtime...");
         try (OnnxEmbedder embedder = new OnnxEmbedder(
-                "models/all-mpnet-base-v2-onnx/model.onnx",
-                "models/all-mpnet-base-v2-onnx", // pass directory (tokenizer.json inside)
+                modelPath + "/model.onnx",
+                modelPath, // pass directory (tokenizer.json inside)
                 384
         )) {
-            embedAndUploadBatches(chunks, embedder, qdrantUrl);
+            embedAndUploadBatches(chunks, embedder, qdrantUrl, collectionName);
         }
 
-        System.out.println("Done. All vectors upserted to Qdrant collection: " + COLLECTION_NAME);
+        System.out.println("Done. All vectors upserted to Qdrant collection: " + collectionName);
     }
 
     // ---- read chunks.jsonl ----
@@ -74,7 +79,8 @@ public class EmbeddingUploader {
     // ---- main batching loop; compute embeddings and upload to Qdrant ----
     private static void embedAndUploadBatches(List<JsonNode> chunks,
                                               OnnxEmbedder embedder,
-                                              String qdrantUrl) throws Exception {
+                                              String qdrantUrl,
+                                              String collectionName) throws Exception {
         OkHttpClient http = new OkHttpClient.Builder()
                 .callTimeout(2, TimeUnit.MINUTES)
                 .connectTimeout(30, TimeUnit.SECONDS)
@@ -95,7 +101,7 @@ public class EmbeddingUploader {
                 // normalize and prepare Qdrant points
                 List<ObjectNode> points = prepareQdrantPoints(batchChunks, embeddings);
                 // upsert to Qdrant
-                upsertToQdrant(http, qdrantUrl, COLLECTION_NAME, points);
+                upsertToQdrant(http, qdrantUrl, collectionName, points);
                 // clear batch
                 texts.clear();
                 batchChunks.clear();
