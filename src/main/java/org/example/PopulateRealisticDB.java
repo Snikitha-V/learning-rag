@@ -1,5 +1,10 @@
 package org.example;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
+import java.io.*;
+import java.nio.charset.StandardCharsets;
 import java.sql.*;
 import java.time.*;
 import java.time.format.DateTimeFormatter;
@@ -46,6 +51,7 @@ public class PopulateRealisticDB {
             createSchema(conn);
             clearTables(conn);
             populate(conn, L);
+            populateChunksFromJsonl(conn, "chunks.jsonl");
 
             conn.commit();
             System.out.println("\nDatabase populated successfully with L=" + L);
@@ -65,6 +71,8 @@ public class PopulateRealisticDB {
             s.execute("CREATE TABLE IF NOT EXISTS assignments (id SERIAL PRIMARY KEY, title TEXT NOT NULL, description TEXT, created_at TIMESTAMP DEFAULT NOW(), due_date DATE);");
             s.execute("CREATE TABLE IF NOT EXISTS assignment_topics (assignment_id INTEGER NOT NULL REFERENCES assignments(id) ON DELETE CASCADE, topic_id INTEGER NOT NULL REFERENCES topics(id) ON DELETE CASCADE, PRIMARY KEY (assignment_id, topic_id));");
             s.execute("CREATE TABLE IF NOT EXISTS resources (id SERIAL PRIMARY KEY, class_id INTEGER NOT NULL REFERENCES classes(id) ON DELETE CASCADE, kind TEXT NOT NULL, url TEXT, description TEXT, created_at TIMESTAMP DEFAULT NOW());");
+            // chunks table for RAG retrieval
+            s.execute("CREATE TABLE IF NOT EXISTS chunks (chunk_id TEXT PRIMARY KEY, title TEXT, text TEXT, chunk_type TEXT, metadata JSONB);");
         }
     }
 
@@ -72,8 +80,55 @@ public class PopulateRealisticDB {
     private static void clearTables(Connection conn) throws SQLException {
         try (Statement s = conn.createStatement()) {
             // order: child tables first
-            s.execute("TRUNCATE assignment_topics, resources, assignments, classes, topics, courses RESTART IDENTITY CASCADE;");
+            s.execute("TRUNCATE assignment_topics, resources, assignments, classes, topics, courses, chunks RESTART IDENTITY CASCADE;");
             System.out.println("Cleared existing tables (if any).");
+        }
+    }
+
+    // populate chunks table from chunks.jsonl
+    private static void populateChunksFromJsonl(Connection conn, String jsonlPath) throws SQLException {
+        ObjectMapper mapper = new ObjectMapper();
+        String sql = "INSERT INTO chunks(chunk_id, title, text, chunk_type, metadata) VALUES (?, ?, ?, ?, ?::jsonb) ON CONFLICT (chunk_id) DO NOTHING";
+        
+        File file = new File(jsonlPath);
+        if (!file.exists()) {
+            System.out.println("Warning: " + jsonlPath + " not found, skipping chunks population.");
+            return;
+        }
+
+        int count = 0;
+        try (BufferedReader br = new BufferedReader(new InputStreamReader(new FileInputStream(file), StandardCharsets.UTF_8));
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            
+            String line;
+            while ((line = br.readLine()) != null) {
+                if (line.trim().isEmpty()) continue;
+                JsonNode node = mapper.readTree(line);
+                
+                String chunkId = node.has("chunk_id") ? node.get("chunk_id").asText() : null;
+                String title = node.has("title") ? node.get("title").asText() : null;
+                String text = node.has("text") ? node.get("text").asText() : null;
+                String chunkType = node.has("chunk_type") ? node.get("chunk_type").asText() : null;
+                String metadata = node.has("metadata") ? node.get("metadata").toString() : null;
+                
+                if (chunkId == null) continue;
+                
+                ps.setString(1, chunkId);
+                ps.setString(2, title);
+                ps.setString(3, text);
+                ps.setString(4, chunkType);
+                ps.setString(5, metadata);
+                ps.addBatch();
+                count++;
+                
+                if (count % 100 == 0) {
+                    ps.executeBatch();
+                }
+            }
+            ps.executeBatch();
+            System.out.println("Inserted " + count + " chunks from " + jsonlPath);
+        } catch (IOException e) {
+            System.err.println("Error reading " + jsonlPath + ": " + e.getMessage());
         }
     }
 

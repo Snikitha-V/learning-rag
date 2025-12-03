@@ -40,6 +40,15 @@ public class OnnxEmbedder implements AutoCloseable {
     }
 
     /**
+     * Embed a single text. Returns float[dim] (L2-normalized).
+     * Convenience wrapper around embed(List).
+     */
+    public float[] embed(String text) throws Exception {
+        float[][] result = embed(List.of(text));
+        return result.length > 0 ? result[0] : new float[0];
+    }
+
+    /**
      * Embed a list of texts. Returns float[batch][dim] (L2-normalized).
      */
     public float[][] embed(List<String> texts) throws Exception {
@@ -209,5 +218,13 @@ public class OnnxEmbedder implements AutoCloseable {
             if (env != null) env.close();
             if (tokenizer != null) tokenizer.close();
         }
+    }
+
+    // Debug/test method to verify embedding dimensions and L2 normalization
+    public static void sanityCheckEmbed(OnnxEmbedder embedder) throws Exception {
+        float[] v = embedder.embed("test normalization check");
+        double sumSq = 0;
+        for (float f : v) sumSq += f * f;
+        System.out.println("embed.length=" + v.length + " norm=" + Math.sqrt(sumSq));
     }
 }

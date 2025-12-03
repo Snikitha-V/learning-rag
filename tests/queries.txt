@@ -1,0 +1,51 @@
+What is supervised learning?
+When did I learn about neural networks?
+What assignments do I have for deep learning?
+What is gradient descent?
+When was my last lecture on backpropagation?
+What resources did I use for convolutional neural networks?
+What notes do I have on recurrent neural networks?
+What is transfer learning?
+When did I study transformers?
+What homework is due for attention mechanism?
+What did I learn about reinforcement learning?
+What is unsupervised learning?
+When did I take the clustering lecture?
+What is k-means algorithm?
+What assignments are pending for decision trees?
+What are random forests?
+When did I learn logistic regression?
+What is linear regression?
+What resources do I have for support vector machines?
+What is overfitting?
+What lectures covered underfitting?
+What is regularization?
+When did I study dropout technique?
+What is batch normalization?
+What notes do I have on Adam optimizer?
+What is learning rate?
+What assignments do I have for cross-validation?
+What is train test split?
+When did I learn about model evaluation?
+What are precision and recall?
+What homework covers F1 score?
+What is ROC curve?
+What did I learn about feature engineering?
+What is data preprocessing?
+When was my lecture on normalization?
+What are embeddings?
+What resources do I have for word embeddings?
+What is Word2Vec?
+When did I study BERT model?
+What is GPT architecture?
+What assignments are there for fine-tuning?
+What is prompt engineering?
+What did I learn about RAG systems?
+What is vector database?
+When did I cover semantic search?
+What is cosine similarity?
+What notes do I have on information retrieval?
+What are recommendation systems?
+What homework do I have for collaborative filtering?
+What is content-based filtering?
+
