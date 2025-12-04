@@ -21,4 +21,9 @@ public class Config {
 
     // Lucene index dir
     public static final String LUCENE_INDEX_DIR = "lucene_index";
+
+    // Prompt token budget
+    public static final int PROMPT_MAX_TOKENS = 4096;
+    public static final int PROMPT_RESERVED_ANSWER = 400;
+    public static final int PROMPT_OVERHEAD = 200;
 }

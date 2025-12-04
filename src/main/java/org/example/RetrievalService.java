@@ -3,14 +3,19 @@ package org.example;
 import java.io.IOException;
 import java.util.*;
 import java.util.stream.Collectors;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class RetrievalService {
+    private static final Logger LOG = LoggerFactory.getLogger(RetrievalService.class);
+
     private final OnnxEmbedder embedder;
     private final QdrantClient qdrant;
     private final LuceneIndexService lucene;
     private final CrossEncoderScorer crossEncoder;
     private final DataFetcher dbFetcher;
     private final LLMClient llm;
+    private final PromptBuilder promptBuilder;
     private final LruCache<String, float[]> embedCache = new LruCache<>(1000);
     private final LruCache<String, List<DbChunk>> retrCache = new LruCache<>(500);
 
@@ -21,6 +26,12 @@ public class RetrievalService {
         this.crossEncoder = crossEncoder;
         this.dbFetcher = dbFetcher;
         this.llm = new LLMClient();
+        this.promptBuilder = new PromptBuilder(
+            Config.CROSS_ENCODER_ONNX_DIR,
+            Config.PROMPT_MAX_TOKENS,
+            Config.PROMPT_RESERVED_ANSWER,
+            Config.PROMPT_OVERHEAD
+        );
     }
 
     /**
@@ -169,21 +180,31 @@ public class RetrievalService {
      * Full RAG pipeline: retrieve context and generate answer using LLM.
      */
     public String ask(String query) throws Exception {
-        // 1) Retrieve relevant chunks
-        List<DbChunk> context = retrieve(query);
-        
-        // 2) Assemble context
-        String contextStr = assembleContext(context, Config.CONTEXT_K, 2000);
-        
-        // 3) Build prompt
-        String fullPrompt = buildPrompt(query, contextStr);
-        
-        // 4) Generate answer
+        // 1) Retrieve relevant chunks (Level 4)
+        List<DbChunk> context = retrieve(query); // existing method returns reranked chunks
+
+        // 2) Build prompt token-aware
+        PromptBuilder pb = new PromptBuilder(Config.CROSS_ENCODER_ONNX_DIR, 4096, 400, 200);
+        String prompt = pb.buildPrompt(context, query, Config.CONTEXT_K);
+
+        // 3) Call LLM
         long t0 = System.nanoTime();
-        String answer = llm.generate(fullPrompt, 300);
+        String rawOutput = llm.generate(prompt, 300);
         System.out.println("[timing] llm generate ms=" + ((System.nanoTime() - t0) / 1_000_000));
-        
-        return answer;
+
+        // 4) Verify output (TEMPORARILY DISABLED - model doesn't follow citation format)
+        // VerificationService verifier = new VerificationService(context);
+        // VerificationResult vr = verifier.verify(rawOutput);
+        //
+        // if (!vr.ok) {
+        //     LOG.warn("Verification failed: {}", vr.errors);
+        //     return "I'm sorry — I could not produce a reliable answer from the provided evidence.";
+        // }
+        //
+        // if (vr.isRefusal) return "I don't have that information in your database.";
+
+        // Return raw LLM output directly (no verification)
+        return rawOutput;
     }
 
     /**
