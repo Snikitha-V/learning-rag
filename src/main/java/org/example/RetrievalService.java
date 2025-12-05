@@ -330,30 +330,99 @@ public class RetrievalService {
     }
 
     /**
-     * Extract short answer from SQL chunk body (first 1-2 lines).
+     * Extract a natural language answer from SQL chunk.
+     * Parses the SQL result body and formats it in a human-friendly way.
      */
     private String extractShortAnswerFromSqlChunk(DbChunk sqlChunk) {
         String text = sqlChunk.getText();
-        if (text == null) return "";
-        String[] lines = text.split("\\r?\\n");
-        StringBuilder sb = new StringBuilder();
-        int taken = 0;
-        for (String l : lines) {
-            if (l.trim().isEmpty()) continue;
-            sb.append(l.trim());
-            taken++;
-            if (taken >= 2) break;
-            sb.append(" ");
+        if (text == null || text.isEmpty()) return "";
+        
+        // Parse the SQL result body
+        // Format: "SQL_RESULT for topic=C1-T1\nearliest: 2025-06-13T11:00\nlatest: 2025-08-02T11:00"
+        // Or: "SQL_RESULT for topic=C1-T1\nTotal classes: 5"
+        
+        String topicCode = null;
+        String earliest = null;
+        String latest = null;
+        Integer totalClasses = null;
+        
+        for (String line : text.split("\\r?\\n")) {
+            line = line.trim();
+            if (line.startsWith("SQL_RESULT for topic=")) {
+                topicCode = line.substring("SQL_RESULT for topic=".length()).trim();
+            } else if (line.startsWith("earliest:")) {
+                earliest = formatDateTime(line.substring("earliest:".length()).trim());
+            } else if (line.startsWith("latest:")) {
+                latest = formatDateTime(line.substring("latest:".length()).trim());
+            } else if (line.startsWith("Total classes:")) {
+                try {
+                    totalClasses = Integer.parseInt(line.substring("Total classes:".length()).trim());
+                } catch (NumberFormatException ignored) {}
+            }
         }
+        
+        // Build natural language response
+        StringBuilder sb = new StringBuilder();
+        
+        if (earliest != null || latest != null) {
+            // Date range query
+            if (earliest != null && latest != null) {
+                if (earliest.equals(latest)) {
+                    sb.append("You learned ").append(topicCode != null ? topicCode : "this topic")
+                      .append(" on ").append(earliest).append(".");
+                } else {
+                    sb.append("You learned ").append(topicCode != null ? topicCode : "this topic")
+                      .append(" between ").append(earliest)
+                      .append(" and ").append(latest).append(".");
+                }
+            } else if (earliest != null) {
+                sb.append("You first learned ").append(topicCode != null ? topicCode : "this topic")
+                  .append(" on ").append(earliest).append(".");
+            } else {
+                sb.append("You last learned ").append(topicCode != null ? topicCode : "this topic")
+                  .append(" on ").append(latest).append(".");
+            }
+        } else if (totalClasses != null) {
+            // Count query
+            sb.append("You have ").append(totalClasses).append(" class")
+              .append(totalClasses == 1 ? "" : "es")
+              .append(" for ").append(topicCode != null ? topicCode : "this topic").append(".");
+        } else {
+            // Fallback: return raw text snippet
+            return snippet(text, 150);
+        }
+        
         return sb.toString();
+    }
+    
+    /**
+     * Format ISO datetime string to a more readable format.
+     * Input: "2025-06-13T11:00" or "2025-06-13T11:00:00"
+     * Output: "June 13, 2025"
+     */
+    private String formatDateTime(String isoDateTime) {
+        if (isoDateTime == null || isoDateTime.isEmpty()) return isoDateTime;
+        try {
+            // Parse ISO format
+            java.time.LocalDateTime dt = java.time.LocalDateTime.parse(isoDateTime);
+            // Format to readable date
+            return dt.format(java.time.format.DateTimeFormatter.ofPattern("MMMM d, yyyy"));
+        } catch (Exception e) {
+            // If parsing fails, return as-is
+            return isoDateTime;
+        }
     }
 
     /**
      * Create a short snippet of text for display.
      */
     private String snippet(String t) {
+        return snippet(t, 120);
+    }
+    
+    private String snippet(String t, int maxLen) {
         if (t == null) return "";
-        int n = Math.min(120, t.length());
+        int n = Math.min(maxLen, t.length());
         return t.substring(0, n).replaceAll("\\r?\\n", " ") + (t.length() > n ? "..." : "");
     }
 
