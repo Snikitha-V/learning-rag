@@ -18,6 +18,13 @@ public class QdrantClient {
         this.collection = collection;
     }
 
+    /**
+     * Alias for search with default ef parameter.
+     */
+    public List<Candidate> searchByVector(float[] vector, int topK, boolean withPayload) throws IOException {
+        return search(vector, topK, Config.QDRANT_EF);
+    }
+
     public List<Candidate> search(float[] vector, int topK, int ef) throws IOException {
         String url = baseUrl + "/collections/" + collection + "/points/search";
         ObjectNode body = M.createObjectNode();

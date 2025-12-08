@@ -35,6 +35,29 @@ public class RetrievalService {
     }
 
     /**
+     * Get the embedder for external use (e.g., evaluation).
+     */
+    public OnnxEmbedder getEmbedder() {
+        return embedder;
+    }
+
+    /**
+     * Factory method to create a default RetrievalService with standard config.
+     */
+    public static RetrievalService createDefault() throws Exception {
+        OnnxEmbedder embedder = new OnnxEmbedder(
+            Config.EMBED_MODEL_PATH + "/model.onnx",
+            Config.EMBED_MODEL_PATH,
+            384
+        );
+        QdrantClient qdrant = new QdrantClient(Config.QDRANT_URL, Config.QDRANT_COLLECTION);
+        LuceneIndexService lucene = new LuceneIndexService(Config.LUCENE_INDEX_DIR);
+        CrossEncoderScorer cross = new CrossEncoderScorer(embedder);
+        DataFetcher db = new DataFetcher();
+        return new RetrievalService(embedder, qdrant, lucene, cross, db);
+    }
+
+    /**
      * Merge dense and lexical candidates, dedupe by chunk_id, fetch missing vectors.
      */
     public static List<Candidate> mergeAndDedupe(List<Candidate> dense, List<String> lexIds, QdrantClient qdrant) throws IOException {
@@ -296,7 +319,7 @@ public class RetrievalService {
     /**
      * Extract topic ID pattern like C<number>-T<number> from query.
      */
-    private String extractTopicIdFromQuery(String q) {
+    String extractTopicIdFromQuery(String q) {
         if (q == null) return null;
         java.util.regex.Matcher m = java.util.regex.Pattern
             .compile("\\bC\\d+-T\\d+\\b", java.util.regex.Pattern.CASE_INSENSITIVE)

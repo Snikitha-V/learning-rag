@@ -1,0 +1,9 @@
+id,query,expected
+F001,When did I learn C1-T1?,"You learned C1-T1 between June 13, 2025 and August 4, 2025."
+F002,How many classes does C2-T3 have?,"You have 5 classes for C2-T3."
+F003,When did I learn C1-T2?,"You learned C1-T2 between July 28, 2025 and November 13, 2025."
+F004,How many classes does C1-T1 have?,"You have 5 classes for C1-T1."
+F005,When did I learn C2-T1?,"You learned C2-T1 between June 21, 2025 and October 10, 2025."
+F006,How many classes does C1-T3 have?,"You have 5 classes for C1-T3."
+F007,When did I learn C2-T2?,"You learned C2-T2 between June 20, 2025 and September 18, 2025."
+F008,How many classes does C2-T4 have?,"You have 5 classes for C2-T4."

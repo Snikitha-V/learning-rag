@@ -1,0 +1,9 @@
+id,query,expected_chunk_ids
+S001,What is supervised learning?,TOPIC_AGG-1;CLASS-1-1;CLASS-2-1
+S002,Explain neural networks and deep learning,TOPIC_AGG-3;CLASS-11-3;CLASS-12-3
+S003,What is unsupervised learning?,TOPIC_AGG-2;CLASS-6-2;CLASS-7-2
+S004,Explain concurrency and threads in Java,TOPIC_AGG-8;CLASS-36-8;CLASS-37-8
+S005,What are collections and generics?,TOPIC_AGG-7;CLASS-31-7;CLASS-32-7
+S006,Explain model evaluation and validation,TOPIC_AGG-4;CLASS-16-4;CLASS-17-4
+S007,What is feature engineering?,TOPIC_AGG-5;CLASS-21-5;CLASS-22-5
+S008,Explain Java I/O and NIO,TOPIC_AGG-9;CLASS-41-9;CLASS-42-9

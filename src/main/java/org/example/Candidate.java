@@ -8,6 +8,14 @@ public class Candidate {
     public Map<String, Object> payload;
     public float[] vector;
 
+    public String getId() {
+        return id;
+    }
+
+    public Map<String, Object> getPayload() {
+        return payload;
+    }
+
     @Override
     public String toString() {
         return "Candidate{id='" + id + "', score=" + score + ", vector=" + (vector==null? "null":"len="+vector.length) + "}";

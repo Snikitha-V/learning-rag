@@ -1,0 +1,6 @@
+id,query,expected_exact,expected_chunk_ids
+M001,How many classes in C1-T1 and what do we cover?,"You have 5 classes for C1-T1.",TOPIC_AGG-1;CLASS-1-1;CLASS-2-1
+M002,When did I learn C1-T3 and explain what it covers,"You learned C1-T3 between July 22, 2025 and November 25, 2025.",TOPIC_AGG-3;CLASS-11-3
+M003,How many classes does C2-T2 have and what topics are included?,"You have 5 classes for C2-T2.",TOPIC_AGG-7;CLASS-31-7
+M004,When did I learn C2-T3 and explain concurrency,You learned C2-T3 between June 12, 2025 and November 29, 2025.,TOPIC_AGG-8;CLASS-36-8
+M005,How many classes in C1-T2 and what is unsupervised learning?,"You have 5 classes for C1-T2.",TOPIC_AGG-2;CLASS-6-2
