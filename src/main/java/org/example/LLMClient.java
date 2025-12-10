@@ -12,10 +12,15 @@ import java.util.concurrent.TimeUnit;
 
 public class LLMClient {
     private final OkHttpClient client;
-    private final String endpoint = "http://localhost:8080/completion";
+    private final String endpoint;
     private final Gson gson = new Gson();
 
     public LLMClient() {
+        this("http://localhost:8081");
+    }
+
+    public LLMClient(String baseUrl) {
+        this.endpoint = baseUrl.replaceAll("/$", "") + "/completion";
         // Set longer timeouts for LLM generation (can take 60+ seconds for complex queries)
         this.client = new OkHttpClient.Builder()
                 .connectTimeout(30, TimeUnit.SECONDS)
