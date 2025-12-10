@@ -130,7 +130,36 @@
     <artifactId>lucene-queryparser</artifactId>
     <version>9.8.0</version>
   </dependency>
+  <!-- Spring Boot (web + actuator) -->
+<dependency>
+  <groupId>org.springframework.boot</groupId>
+  <artifactId>spring-boot-starter-web</artifactId>
+  <version>3.2.4</version>
+</dependency>
+<dependency>
+  <groupId>org.springframework.boot</groupId>
+  <artifactId>spring-boot-starter-actuator</artifactId>
+  <version>3.2.4</version>
+</dependency>
+
+<!-- Micrometer for Prometheus (optional) -->
+<dependency>
+  <groupId>io.micrometer</groupId>
+  <artifactId>micrometer-registry-prometheus</artifactId>
+  <version>1.11.0</version>
+</dependency>
+
 
 </dependencies>
+
+<build>
+  <plugins>
+    <plugin>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-maven-plugin</artifactId>
+      <version>3.2.4</version>
+    </plugin>
+  </plugins>
+</build>
 
 </project>
