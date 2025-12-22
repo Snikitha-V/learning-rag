@@ -217,32 +217,12 @@ async function sendQuery() {
     const meta = document.createElement('div');
     meta.className = 'meta-row';
 
-    // Route badge (SQL / RAG / MIXED)
-    if (json.route) {
-      const r = document.createElement('span');
-      r.className = 'badge route';
-      r.style.background = json.route === 'SQL' ? '#bbdefb' : json.route === 'RAG' ? '#e1bee7' : '#ffe0b2';
-      r.style.color = '#333';
-      r.innerText = json.route;
-      meta.appendChild(r);
-    }
-
     // Confidence badge
     if (json.confidence) {
       const c = document.createElement('span');
       c.className = 'badge confidence ' + json.confidence;
       c.innerText = json.confidence.toUpperCase();
       meta.appendChild(c);
-    }
-
-    // Intent badge
-    if (json.intent) {
-      const i = document.createElement('span');
-      i.className = 'badge intent';
-      i.style.background = '#e0e0e0';
-      i.style.color = '#555';
-      i.innerText = json.intent;
-      meta.appendChild(i);
     }
 
     // Latency

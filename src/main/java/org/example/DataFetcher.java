@@ -4,12 +4,14 @@ import java.sql.*;
 import java.util.*;
 
 public class DataFetcher {
-    private final String jdbcUrl = "jdbc:postgresql://localhost:5432/learning_db";
-    private final String dbUser = "postgres";
-    private final String dbPass = "Snikitha05!";
+    private final String jdbcUrl;
+    private final String dbUser;
+    private final String dbPass;
 
     public DataFetcher() {
-        // nothing
+        this.jdbcUrl = Config.DB_URL;
+        this.dbUser = Config.DB_USER;
+        this.dbPass = Config.DB_PASS;
     }
 
     public Map<String, DbChunk> fetchChunks(List<String> chunkIds) throws SQLException {
