@@ -188,6 +188,9 @@ function removeThinking() {
   if (t) t.remove();
 }
 
+// Allow overriding the API base via URL param `?api_base=` (empty = same-origin)
+const API_BASE = (new URLSearchParams(window.location.search).get('api_base') || '').replace(/\/$/, '');
+
 async function sendQuery() {
   const q = queryInput.value.trim();
   if (!q) return;
@@ -197,7 +200,7 @@ async function sendQuery() {
   addThinking();
 
   try {
-    const res = await fetch('/api/v1/query', {
+    const res = await fetch((API_BASE ? API_BASE : '') + '/api/v1/query', {
       method:'POST',
       headers:{'Content-Type':'application/json'},
       body:JSON.stringify({query:q})

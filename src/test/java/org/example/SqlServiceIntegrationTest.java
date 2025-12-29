@@ -1,14 +1,15 @@
 package org.example;
 
-import org.junit.*;
-import org.testcontainers.containers.GenericContainer;
-
 import java.sql.Connection;
 import java.sql.Statement;
 import java.util.Map;
 import java.util.Optional;
 
-import static org.junit.Assert.*;
+import org.junit.AfterClass;
+import static org.junit.Assert.assertTrue;
+import org.junit.BeforeClass;
+import org.junit.Test;
+import org.testcontainers.containers.GenericContainer;
 
 public class SqlServiceIntegrationTest {
 

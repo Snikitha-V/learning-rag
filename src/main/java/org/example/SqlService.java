@@ -272,6 +272,51 @@ public class SqlService {
     }
 
     /**
+     * Find course code by title (case-insensitive, returns first match)
+     */
+    public Optional<String> findCourseCodeByTitle(String title) throws SQLException {
+        String sql = "SELECT code FROM courses WHERE LOWER(title) = LOWER(?) LIMIT 1;";
+        try (Connection conn = getConn(); PreparedStatement p = conn.prepareStatement(sql)) {
+            p.setString(1, title.trim());
+            try (ResultSet rs = p.executeQuery()) {
+                if (rs.next()) return Optional.ofNullable(rs.getString("code"));
+                return Optional.empty();
+            }
+        }
+    }
+
+    /**
+     * Query earliest and latest class timestamps for a given course code (e.g., C1)
+     * Returns map with keys "earliest" and "latest" as ISO datetimes, or empty if none.
+     */
+    public Optional<Map<String,String>> queryCourseDateRange(String courseCode) throws SQLException {
+        String findCourseId = "SELECT id FROM courses WHERE UPPER(code) = UPPER(?) LIMIT 1;";
+        try (Connection conn = getConn(); PreparedStatement p = conn.prepareStatement(findCourseId)) {
+            p.setString(1, courseCode.trim());
+            try (ResultSet rs = p.executeQuery()) {
+                if (!rs.next()) return Optional.empty();
+                int courseId = rs.getInt("id");
+
+                String sql = "SELECT MIN(c.learned_at) AS earliest, MAX(c.learned_at) AS latest " +
+                             "FROM classes c JOIN topics t ON c.topic_id = t.id WHERE t.course_id = ?;";
+                try (PreparedStatement q = conn.prepareStatement(sql)) {
+                    q.setInt(1, courseId);
+                    try (ResultSet rr = q.executeQuery()) {
+                        if (!rr.next()) return Optional.empty();
+                        Timestamp e = rr.getTimestamp("earliest");
+                        Timestamp l = rr.getTimestamp("latest");
+                        if (e == null && l == null) return Optional.empty();
+                        Map<String,String> out = new LinkedHashMap<>();
+                        if (e != null) out.put("earliest", e.toLocalDateTime().toString());
+                        if (l != null) out.put("latest", l.toLocalDateTime().toString());
+                        return Optional.of(out);
+                    }
+                }
+            }
+        }
+    }
+
+    /**
      * List classes on a given date.
      */
     public List<Map<String,String>> listClassesOnDate(String isoDate) throws SQLException {

@@ -1,0 +1,1 @@
+conversation-gateway listening on 3000, backend=http://localhost:8080, qdrant=http://localhost:6333
