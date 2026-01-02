@@ -369,3 +369,47 @@ curl http://localhost:8081/health
 ## Notes
 
 This repository does not include automated CI/CD workflows. If you later want CI/CD, add workflows under `.github/workflows/` to suit your needs.
+
+## Frontend UI & Gateway (session-aware testing)
+
+The web UI is served by the backend at `http://localhost:8080/` and by default calls the backend directly. To exercise session-aware follow-ups (rewrites, guards, payload-based context) use the Conversation Gateway on port `3000` and point the UI to it.
+
+- Open the UI pointed at the gateway:
+
+```text
+http://localhost:8080/?api_base=http://localhost:3000
+```
+
+- Quick curl sequence (captures `X-Session-Id` in response headers):
+
+```bash
+# 1) First question (note X-Session-Id in response headers)
+curl -i -X POST http://localhost:3000/api/v1/query \
+    -H "Content-Type: application/json" \
+    -d '{"query":"Which course should I take to learn SQL?"}'
+
+# 2) Follow-up using same session id
+curl -X POST http://localhost:3000/api/v1/query \
+    -H "Content-Type: application/json" \
+    -H "X-Session-Id: <PASTE_SESSION_ID>" \
+    -d '{"query":"When is it offered?"}'
+```
+
+- In-browser flow: open the UI URL above, send the first question, copy the `X-Session-Id` response header (DevTools → Network), then use a header-injector extension (e.g., ModHeader) to add `X-Session-Id` for requests to `http://localhost:3000` so the UI will keep context.
+
+## Commit & Push (recommended)
+
+After verifying changes locally, commit the updated README and push to your repo. Example commands:
+
+```bash
+git checkout -b chore/update-readme-gateway
+git add README.md
+git commit -m "docs: add gateway UI and session testing instructions"
+git push -u origin chore/update-readme-gateway
+```
+
+If you want this merged to `main`, open a PR on GitHub and run your normal review process.
+
+## End-to-end test note
+
+User verified the UI and gateway session flow locally; for production consider persisting sessions (Redis) and enabling secure CORS/credentials for cookie-based sessions.
