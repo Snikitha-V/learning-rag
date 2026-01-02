@@ -4,7 +4,7 @@ A Retrieval-Augmented Generation (RAG) application for learning management, comb
 
 ## What’s Included (customer-ready)
 - Spring Boot RAG API (8080) with hybrid dense + BM25 retrieval and factual SQL paths
-- Conversation gateway (3000) for session-aware rewrites, deterministic Qdrant lookups, metrics, and safe API surface
+- Conversation gateway/proxy (3000) for session-aware rewrites, deterministic Qdrant lookups, metrics, and a safe API surface between clients and the RAG API
 - Qdrant + PostgreSQL backing stores, deterministic UUID upserts for vector payloads
 - Production safety knobs: DB role separation (reader/editor/admin), optional tenant RLS, optional write audit logging
 - Docs for enabling RLS & audit later: [docs/RLS_AND_AUDIT_GUIDE.md](docs/RLS_AND_AUDIT_GUIDE.md)
@@ -180,7 +180,7 @@ mvn org.springframework.boot:spring-boot-maven-plugin:3.2.4:run
 
 The app will start on `http://localhost:8080`
 
-### Option 2b: Conversation Gateway (front-door, optional but recommended)
+### Option 2b: Conversation Gateway / Proxy (front-door, optional but recommended)
 
 Runs on port 3000 and fronts the backend with session-aware rewrites, metrics, and deterministic Qdrant fetches.
 
@@ -295,7 +295,7 @@ This uploads 305 vectors to Qdrant's `learning_chunks` collection.
 | `src/main/java/org/example/RetrievalService.java` | Hybrid RAG orchestration |
 | `src/main/java/org/example/QdrantClient.java` | Vector search client |
 | `src/main/resources/application.properties` | Application configuration |
-| `conversation-gateway/proxy.js` | Node gateway front-door (session, rewrites, metrics) |
+| `conversation-gateway/proxy.js` | Node gateway/proxy front-door (session, rewrites, metrics) |
 | `conversation-gateway/docker-compose.gateway.yml` | Optional gateway/docker wiring |
 | `docs/RLS_AND_AUDIT_GUIDE.md` | How to enable tenant RLS and audit logging (optional) |
 | `chunks.jsonl` | Learning chunks in JSONL format for embedding |
