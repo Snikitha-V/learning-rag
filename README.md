@@ -2,13 +2,6 @@
 
 A Retrieval-Augmented Generation (RAG) application for learning management, combining semantic search, SQL queries, and LLM-powered responses.
 
-## What’s Included (customer-ready)
-- Spring Boot RAG API (8080) with hybrid dense + BM25 retrieval and factual SQL paths
-- Conversation gateway/proxy (3000) for session-aware rewrites, deterministic Qdrant lookups, metrics, and a safe API surface between clients and the RAG API
-- Qdrant + PostgreSQL backing stores, deterministic UUID upserts for vector payloads
-- Production safety knobs: DB role separation (reader/editor/admin), optional tenant RLS, optional write audit logging
-- Docs for enabling RLS & audit later: [docs/RLS_AND_AUDIT_GUIDE.md](docs/RLS_AND_AUDIT_GUIDE.md)
-
 ## Overview
 
 This is a **microservice application** built with Spring Boot that implements a hybrid RAG system. It's independently deployable, owns a single business capability (retrieval-augmented generation), and exposes a unified API for querying.
@@ -18,6 +11,7 @@ Key components:
 - **Qdrant**: Vector database for semantic similarity search with embeddings
 - **Mistral 7B LLM**: Generate intelligent responses using retrieved context
 - **Hybrid Retrieval**: Combines SQL queries for structured data + vector search for semantic matching
+- **Conversation Gateway/Proxy (optional)**: Front-door on port 3000 that preserves session context, fetches Qdrant payloads deterministically, exposes health/metrics, and keeps the public surface read-only
 
 ## Architecture & Retrieval Pipelines
 
@@ -61,13 +55,6 @@ SEMANTIC Query
     ↓
 Answer + Sources
 ```
-
-## Security & Safety (built-in)
-- **DB least-privilege**: reader/editor/admin roles created in Postgres; ship with reader-only credentials for RAG/LLM. Editor is for admin/upload only; admin for DB maintenance.
-- **LLM sandboxing**: LLM and gateway use reader-only access; SQL is fixed/prepared (no dynamic SQL from prompts).
-- **Deterministic IDs**: Qdrant points use Java UUID.v3(nameUUIDFromBytes) of `chunk_id`, enabling exact payload fetches and cache hits in the gateway.
-- **Optional isolation & audit**: Tenant Row-Level Security (RLS) and write auditing are documented and off by default — see [docs/RLS_AND_AUDIT_GUIDE.md](docs/RLS_AND_AUDIT_GUIDE.md).
-- **Gateway safety**: Session-aware query rewriting, metrics, health, and payload caching; no write surfaces exposed.
 
 ### FACTUAL Query Pipeline (SQL + RAG)
 For queries like "List all courses" or "How many topics are there?"
@@ -180,21 +167,6 @@ mvn org.springframework.boot:spring-boot-maven-plugin:3.2.4:run
 
 The app will start on `http://localhost:8080`
 
-### Option 2b: Conversation Gateway / Proxy (front-door, optional but recommended)
-
-Runs on port 3000 and fronts the backend with session-aware rewrites, metrics, and deterministic Qdrant fetches.
-
-```bash
-cd rag-learning/conversation-gateway
-npm install
-BACKEND_BASE=http://localhost:8080 \
-QDRANT_BASE=http://localhost:6333 \
-PORT=3000 \
-npm start
-```
-
-Health: `http://localhost:3000/health` • Metrics: `http://localhost:3000/metrics`
-
 ### Option 3: Run JAR After Building
 
 ```bash
@@ -210,6 +182,21 @@ docker-compose up -d
 export DB_PASS="your_postgres_password"
 java -jar target/rag-learning-1.0-SNAPSHOT.jar
 ```
+
+### Option 2b: Conversation Gateway / Proxy (optional front-door)
+
+Runs on port 3000 in front of the backend. Provides session-aware rewrites of follow-ups, deterministic Qdrant payload fetches (matching Java UUID v3 of `chunk_id`), health/metrics endpoints, and keeps the exposed surface read-only.
+
+```bash
+cd rag-learning/conversation-gateway
+npm install
+BACKEND_BASE=http://localhost:8080 \
+QDRANT_BASE=http://localhost:6333 \
+PORT=3000 \
+npm start
+```
+
+Health: `http://localhost:3000/health` • Metrics: `http://localhost:3000/metrics`
 
 ## Database Setup
 
@@ -295,9 +282,6 @@ This uploads 305 vectors to Qdrant's `learning_chunks` collection.
 | `src/main/java/org/example/RetrievalService.java` | Hybrid RAG orchestration |
 | `src/main/java/org/example/QdrantClient.java` | Vector search client |
 | `src/main/resources/application.properties` | Application configuration |
-| `conversation-gateway/proxy.js` | Node gateway/proxy front-door (session, rewrites, metrics) |
-| `conversation-gateway/docker-compose.gateway.yml` | Optional gateway/docker wiring |
-| `docs/RLS_AND_AUDIT_GUIDE.md` | How to enable tenant RLS and audit logging (optional) |
 | `chunks.jsonl` | Learning chunks in JSONL format for embedding |
 | `temp_chunks.sql` | SQL script with 305 chunks |
 | `populate_classes.sql` | SQL script for classes data |
@@ -311,15 +295,11 @@ This uploads 305 vectors to Qdrant's `learning_chunks` collection.
 DB_HOST=localhost              # PostgreSQL host
 DB_PORT=5432                   # PostgreSQL port
 DB_NAME=learning_db            # Database name
-DB_USER=rag_reader_user        # PostgreSQL user (use reader-only for RAG/LLM)
-DB_PASS=pwd_reader             # PostgreSQL password (override per env)
+DB_USER=postgres                 # PostgreSQL user
+DB_PASS=your_postgres_password  # PostgreSQL password (REQUIRED)
 
 QDRANT_HOST=localhost          # Qdrant host
 QDRANT_PORT=6333              # Qdrant port
-
-# If you run an admin/upload profile, use editor creds for that process only:
-# DB_USER=rag_editor_user
-# DB_PASS=pwd_editor
 
 LLM_HOST=localhost             # Mistral LLM host
 LLM_PORT=8081                 # Mistral LLM port
