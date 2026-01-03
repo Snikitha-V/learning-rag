@@ -11,6 +11,13 @@ public class Config {
 
     // LLM server
     public static final String LLM_URL = getEnvOrDefault("LLM_URL", "http://localhost:8081");
+    
+    // LLM provider plugin system (for customers)
+    public static final String LLM_PROVIDER = getEnvOrDefault("LLM_PROVIDER", "llama"); // llama, openai, custom_http
+    public static final String LLM_API_KEY = getEnvOrDefault("LLM_API_KEY", "");        // for OpenAI/custom
+    public static final String LLM_MODEL = getEnvOrDefault("LLM_MODEL", "gpt-3.5-turbo"); // for OpenAI
+    public static final double LLM_TEMPERATURE = Double.parseDouble(getEnvOrDefault("LLM_TEMPERATURE", "0.2"));
+    public static final int LLM_MAX_TOKENS = Integer.parseInt(getEnvOrDefault("LLM_MAX_TOKENS", "300"));
 
     // retrieval params
     public static final int TOPK_DENSE = 100;

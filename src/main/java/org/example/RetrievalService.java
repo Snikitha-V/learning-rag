@@ -4,6 +4,8 @@ import java.io.IOException;
 import java.util.*;
 import java.util.stream.Collectors;
 import org.example.dto.ConversationTurn;
+import org.example.llm.LLMFactory;
+import org.example.llm.LLMProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -17,7 +19,7 @@ public class RetrievalService {
     private final LuceneIndexService lucene;
     private final CrossEncoderScorer crossEncoder;
     private final DataFetcher dbFetcher;
-    private final LLMClient llm;
+    private final LLMProvider llm;  // Now uses interface for plug-in support
     private final PromptBuilder promptBuilder;
     private final LruCache<String, float[]> embedCache = new LruCache<>(1000);
     private final LruCache<String, List<DbChunk>> retrCache = new LruCache<>(500);
@@ -28,7 +30,7 @@ public class RetrievalService {
         this.lucene = lucene;
         this.crossEncoder = crossEncoder;
         this.dbFetcher = dbFetcher;
-        this.llm = new LLMClient();
+        this.llm = LLMFactory.createProvider();  // Factory-based LLM selection
         this.promptBuilder = new PromptBuilder(
             Config.CROSS_ENCODER_ONNX_DIR,
             Config.PROMPT_MAX_TOKENS,
