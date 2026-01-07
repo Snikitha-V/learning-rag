@@ -1,13 +1,16 @@
 package org.example.dto;
 
 /**
- * Simple DTO used by the gateway to share conversational history with the backend.
+ * Simple DTO used by the gateway to share conversational history with the
+ * backend.
  */
 public class ConversationTurn {
+
     private String role;
     private String content;
 
-    public ConversationTurn() {}
+    public ConversationTurn() {
+    }
 
     public ConversationTurn(String role, String content) {
         this.role = role;

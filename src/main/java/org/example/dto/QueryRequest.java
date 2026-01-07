@@ -10,7 +10,8 @@ public class QueryRequest {
     private String query;
     private List<ConversationTurn> history;
 
-    public QueryRequest() {}
+    public QueryRequest() {
+    }
 
     public QueryRequest(String query) {
         this.query = query;

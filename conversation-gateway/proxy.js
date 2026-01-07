@@ -226,7 +226,7 @@ app.post('/api/v1/query', async (req, res) => {
     // forward x-api-key if present
     if (req.header('x-api-key')) headers['x-api-key'] = req.header('x-api-key');
 
-    const backendResp = await axios.post(`${BACKEND}/api/v1/query`, buildBackendRequest(queryToSend), { headers, timeout: 120000 });
+    const backendResp = await axios.post(`${BACKEND}/api/v1/query`, buildBackendRequest(queryToSend), { headers, timeout: 300000 });
 
     const data = backendResp.data || {};
 
@@ -345,7 +345,7 @@ app.post('/api/v1/query', async (req, res) => {
           // fallback: rewrite to use course title and let backend handle it
           queryToSend = rewriteQuery(originalQuery, state.active_course.title);
           rewriteCounter.inc();
-          const backendResp2 = await axios.post(`${BACKEND}/api/v1/query`, buildBackendRequest(queryToSend), { headers, timeout: 120000 });
+          const backendResp2 = await axios.post(`${BACKEND}/api/v1/query`, buildBackendRequest(queryToSend), { headers, timeout: 300000 });
           const data2 = backendResp2.data || {};
           const out2 = Object.assign({}, data2, { context: { active_entity: state.active_course.title, entity_type: 'COURSE' } });
           const assistantAnswer2 = data2.answer || data2.text || '';

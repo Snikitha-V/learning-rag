@@ -1,6 +1,7 @@
 package org.example;
 
 public class Config {
+
     // Qdrant - use ENV var, fallback to localhost for local dev
     public static final String QDRANT_URL = getEnvOrDefault("QDRANT_URL", "http://localhost:6333");
     public static final String QDRANT_COLLECTION = getEnvOrDefault("QDRANT_COLLECTION", "learning_chunks");
@@ -11,7 +12,7 @@ public class Config {
 
     // LLM server
     public static final String LLM_URL = getEnvOrDefault("LLM_URL", "http://localhost:8081");
-    
+
     // LLM provider plugin system (for customers)
     public static final String LLM_PROVIDER = getEnvOrDefault("LLM_PROVIDER", "llama"); // llama, openai, custom_http
     public static final String LLM_API_KEY = getEnvOrDefault("LLM_API_KEY", "");        // for OpenAI/custom
